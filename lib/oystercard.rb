@@ -1,6 +1,6 @@
 class Oystercard
 
-attr_accessor :balance, :entry_station 
+attr_accessor :balance, :entry_station
 
 BALANCE_LIMIT = 90
 MINIMUM_FARE_LIMIT = 1
@@ -26,11 +26,12 @@ MINIMUM_FARE_LIMIT = 1
 
   def touch_out
     deduct MINIMUM_FARE_LIMIT
+    @entry_station = nil
     @in_use = false
   end
 
   def in_journey?
-    @in_use
+    !entry_station.nil?
   end
 
   def minimum_fare_check
