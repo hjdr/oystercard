@@ -20,8 +20,8 @@ MINIMUM_FARE_LIMIT = 1
   end
 
   def touch_in(train_station)
-    @entry_station = train_station
     minimum_fare_check
+    @entry_station = train_station
   end
 
   def touch_out(train_station)

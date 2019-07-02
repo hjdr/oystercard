@@ -10,7 +10,7 @@ describe Oystercard do
       expect(subject.journeys).to be_empty
     end
   end
-    
+
 
   describe "#balance" do
     it "Set balance to 0 on initialize" do
@@ -36,7 +36,8 @@ describe Oystercard do
     context "with sufficient funds" do
       it "returns the in use status of the oystercard" do
         subject.top_up(20)
-        expect(subject.touch_in(trainstation)).to eq true
+        subject.touch_in(trainstation)
+        expect(subject.entry_station).to eq trainstation
       end
 
       it "Remember the entry station" do
@@ -55,9 +56,6 @@ describe Oystercard do
     end
 
   describe "#touch_out" do
-    it "returns not in use status of the oystercard" do
-      expect(subject.touch_out(:trainstation1)).to eq false
-    end
     it "charge the journey" do
       expect {subject.touch_out(:trainstation1)}.to change{subject.balance}.by(-1)
     end
