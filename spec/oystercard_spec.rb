@@ -2,6 +2,8 @@ require 'oystercard'
 
 describe Oystercard do
 
+  let(:trainstation) {double('trainstation')}
+
     describe "#balance" do
       it "Set balance to 0 on initialize" do
         expect(subject.balance).to eq 0
@@ -22,26 +24,24 @@ describe Oystercard do
       end
     end
 
-    describe "#deduct" do
-      it "it deducts a given amount from the current balance" do
-        subject.top_up(20)
-        subject.deduct(2)
-        expect(subject.balance).to eq(18)
-      end
-    end
-
     describe "#touch_in" do
       context "with sufficient funds" do
         it "returns the in use status of the oystercard" do
           subject.top_up(20)
-          expect(subject.touch_in).to eq true
+          expect(subject.touch_in(trainstation)).to eq true
+        end
+        it "Remember the entry station" do
+          subject.top_up(20)
+          trainstation =  double("trainstation")
+          subject.touch_in(trainstation)
+          expect(subject.entry_station).to eq (trainstation)
         end
       end
     end
 
       context "with insufficient funds" do
         it "returns the in use status of the oystercard" do
-          expect { subject.touch_in }.to raise_error "Not enough funds, minimum balance required 1"
+          expect { subject.touch_in(trainstation) }.to raise_error "Not enough funds, minimum balance required 1"
         end
       end
 
@@ -49,12 +49,15 @@ describe Oystercard do
       it "returns not in use status of the oystercard" do
         expect(subject.touch_out).to eq false
       end
+      it "charge the journey" do
+        expect {subject.touch_out}.to change{subject.balance}.by(-1)
+      end
     end
 
     describe "#in_journey?" do
       it "returns the oyestercard is in use" do
         subject.top_up(20)
-        subject.touch_in
+        subject.touch_in(trainstation)
         expect(subject.in_journey?).to eq true
       end
 

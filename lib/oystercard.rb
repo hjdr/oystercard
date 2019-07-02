@@ -1,6 +1,6 @@
 class Oystercard
 
-attr_accessor :balance
+attr_accessor :balance, :entry_station 
 
 BALANCE_LIMIT = 90
 MINIMUM_FARE_LIMIT = 1
@@ -18,16 +18,14 @@ MINIMUM_FARE_LIMIT = 1
     amount + self.balance > BALANCE_LIMIT
   end
 
-  def deduct(amount)
-    self.balance -= amount
-  end
-
-  def touch_in
+  def touch_in train_station
+    @entry_station = train_station
     minimum_fare_check
     @in_use = true
   end
 
   def touch_out
+    deduct MINIMUM_FARE_LIMIT
     @in_use = false
   end
 
@@ -38,4 +36,10 @@ MINIMUM_FARE_LIMIT = 1
   def minimum_fare_check
     raise "Not enough funds, minimum balance required 1" if self.balance < MINIMUM_FARE_LIMIT
   end
+
+  private
+    def deduct(amount)
+      self.balance -= amount
+    end
+
 end
