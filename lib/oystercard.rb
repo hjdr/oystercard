@@ -1,3 +1,5 @@
+require './lib/station.rb'
+
 class Oystercard
 
 attr_accessor :balance, :entry_station, :exit_station, :journeys
@@ -32,7 +34,7 @@ MINIMUM_FARE_LIMIT = 1
   end
 
   def in_journey?
-    !entry_station.nil?
+    !@entry_station.nil?
   end
 
   def minimum_fare_check
@@ -45,7 +47,7 @@ MINIMUM_FARE_LIMIT = 1
     end
 
     def store_journey
-      @journeys << { entrystation: @entry_station, exitstation: @exit_station }
+      @journeys << { entrystation: @entry_station.name, entrystationzone: @entry_station.zone, exitstation: @exit_station.name, exitstationzone: @exit_station.zone }
 
     end
 

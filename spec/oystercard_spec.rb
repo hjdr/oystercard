@@ -2,31 +2,33 @@ require 'oystercard'
 
 describe Oystercard do
 
-  let(:trainstation) {double('trainstation')}
-  let(:trainstation1) {double('trainstation1')}
+  let(:euston) { double('euston') }
+  let(:kingscross) { double('trainstation1') }
 
-  describe "#initialize" do
-    it "creates an empty journeys list by default" do
-      expect(subject.journeys).to be_empty
-    end
+  before :each do
+    allow(euston).to receive(:name).and_return('euston')
+    allow(euston).to receive(:zone).and_return(1)
+    allow(kingscross).to receive(:name).and_return('kingscross')
+    allow(kingscross).to receive(:zone).and_return(2)
   end
 
+  describe "#initialize" do
+    it "creates an empty journeys list" do
+      expect(subject.journeys).to be_empty
+    end
 
-  describe "#balance" do
-    it "Set balance to 0 on initialize" do
+    it "sets balance to 0" do
       expect(subject.balance).to eq 0
     end
   end
 
   describe "#top_up" do
-    it "Add money to the balance" do
+    it "adds money to the balance" do
       subject.top_up(20)
       expect(subject.balance).to eq 20
     end
-  end
 
-  describe "#top_up" do
-    it "raises an error if combined balance > 90.00" do
+    it "raises an error if combined balance > BALANCE_LIMIT" do
       card = Oystercard.new
       expect { card.top_up(95) }.to raise_error("amount exceeded, balance cannot be: 95. Balance limit is 90")
     end
@@ -34,47 +36,50 @@ describe Oystercard do
 
   describe "#touch_in" do
     context "with sufficient funds" do
-      it "returns the in use status of the oystercard" do
+      it "records the entry_station" do
         subject.top_up(20)
-        subject.touch_in(trainstation)
-        expect(subject.entry_station).to eq trainstation
+        subject.touch_in(euston)
+        expect(subject.entry_station).to eq(euston)
       end
+    end
 
-      it "Remember the entry station" do
-        subject.top_up(20)
-        trainstation =  double("trainstation")
-        subject.touch_in(trainstation)
-        expect(subject.entry_station).to eq (trainstation)
+    context "with insufficient funds" do
+      it "raises an error message" do
+        expect { subject.touch_in(euston) }.to raise_error "Not enough funds, minimum balance required 1"
       end
     end
   end
 
-    context "with insufficient funds" do
-      it "returns the in use status of the oystercard" do
-        expect { subject.touch_in(trainstation) }.to raise_error "Not enough funds, minimum balance required 1"
-      end
-    end
-
   describe "#touch_out" do
-    it "charge the journey" do
-      expect {subject.touch_out(:trainstation1)}.to change{subject.balance}.by(-1)
+
+    before :each do
+      subject.top_up(20)
+      subject.touch_in(euston)
     end
 
-    it "sets the exit station" do
-      subject.touch_out(:trainstation1)
-      expect(subject.exit_station).to eq(:trainstation1)
+    it "records the exit station" do
+      subject.touch_out(kingscross)
+      expect(subject.exit_station).to eq(kingscross)
+    end
+    
+    it "charges the minimum balance" do
+      expect {subject.touch_out(kingscross)}.to change{subject.balance}.by(-1)
     end
   end
 
   describe "#in_journey?" do
-    it "returns the oyestercard is in use" do
+    
+    before :each do
       subject.top_up(20)
-      subject.touch_in(trainstation)
+      subject.touch_in(euston)
+    end
+
+    it "returns the oyestercard is in use" do
       expect(subject.in_journey?).to eq true
     end
 
     it "returns the oystercard is not in use" do
-      subject.touch_out(:trainstation1)
+      subject.touch_out(kingscross)
       expect(subject.in_journey?).to eq false
     end
   end
@@ -88,9 +93,9 @@ describe Oystercard do
   describe "#store_journey" do
     it "stores the journey after touch_out" do
       subject.top_up(20)
-      subject.touch_in(:trainstation)
-      subject.touch_out(:trainstation1)
-      expect(subject.journeys).to eq([{ entrystation: :trainstation, exitstation: :trainstation1 }])
+      subject.touch_in(euston)
+      subject.touch_out(kingscross)
+      expect(subject.journeys).to eq([{ entrystation: 'euston', entrystationzone: 1, exitstation: 'kingscross', exitstationzone: 2 }])
     end
   end
 end
