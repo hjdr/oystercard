@@ -12,6 +12,7 @@ class Oystercard
   def initialize(balance=0)
     @balance = balance
     @journeys = []
+    @journey_log = JourneyLog.new
     @journey = Journey.new
   end
 

@@ -5,7 +5,7 @@ describe Oystercard do
   let(:euston) { double 'station', name: 'euston', zone: 1 }
   let(:kingscross) { double 'station', name: 'kingscross', zone: 2 }
   let(:journey) { double 'journey', start: 'euston', end: 'kingscross' }
-  
+
   describe "#initialize" do
     it "creates an empty journeys list" do
       expect(subject.journeys).to be_empty
@@ -55,7 +55,7 @@ describe Oystercard do
       subject.top_up(20)
       subject.touch_in(euston, journey)
     end
-    
+
     it "charges the minimum balance" do
       allow(journey).to receive(:fare) { 1 }
       expect {subject.touch_out(kingscross)}.to change{subject.balance}.by(-1)
@@ -64,16 +64,6 @@ describe Oystercard do
     it "charges the penalty balance" do
       allow(journey).to receive(:fare) { 6 }
       expect {subject.touch_out(kingscross)}.to change{subject.balance}.by(-6)
-    end
-  end
-
-  describe "#store_journey" do
-    it "stores the journey after touch_out" do
-      allow(journey).to receive(:fare) { 1 }
-      subject.top_up(20)
-      subject.touch_in(euston, journey)
-      subject.touch_out(kingscross)
-      expect(subject.journeys).to eq([journey])
     end
   end
 end
