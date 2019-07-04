@@ -1,54 +1,53 @@
 require './lib/station.rb'
+require './lib/journeys.rb'
+
 
 class Oystercard
 
-attr_accessor :balance, :entry_station, :exit_station, :journeys
+  attr_accessor :balance, :entry_station, :exit_station, :journeys, :journey
 
-BALANCE_LIMIT = 90
-MINIMUM_FARE_LIMIT = 1
+  BALANCE_LIMIT = 90
+  MINIMUM_FARE_LIMIT = 1
 
   def initialize(balance=0)
     @balance = balance
     @journeys = []
+    @journey = Journey.new
   end
 
   def top_up(amount)
-    raise("amount exceeded, balance cannot be: #{amount + self.balance}. Balance limit is 90") if balance_check(amount)
+    balance_check(amount)
     self.balance += amount
   end
 
   def balance_check(amount)
-    amount + self.balance > BALANCE_LIMIT
+    raise("amount exceeded, balance cannot be: #{amount + self.balance}. Balance limit is 90") if (amount + self.balance) > BALANCE_LIMIT
   end
 
-  def touch_in(train_station)
-    minimum_fare_check
-    @entry_station = train_station
+  def touch_in(train_station, journey=Journey.new)
+    deduct(@journey.fare) unless @journey.complete?
+    @journey = journey
+    raise "Not enough funds, minimum balance required 1" if  minimum_fare_check
+    @journey.start(train_station)
   end
 
   def touch_out(train_station)
-    @exit_station = train_station
-    deduct(MINIMUM_FARE_LIMIT)
+    @journey.end(train_station)
+    deduct(@journey.fare)
     store_journey
-    @entry_station = nil
-  end
-
-  def in_journey?
-    !@entry_station.nil?
-  end
-
-  def minimum_fare_check
-    raise "Not enough funds, minimum balance required 1" if self.balance < MINIMUM_FARE_LIMIT
   end
 
   private
     def deduct(amount)
-      self.balance -= amount
+      @balance -= amount
     end
 
     def store_journey
-      @journeys << { entrystation: @entry_station.name, entrystationzone: @entry_station.zone, exitstation: @exit_station.name, exitstationzone: @exit_station.zone }
+      @journeys << @journey
+    end
 
+    def minimum_fare_check
+      self.balance < MINIMUM_FARE_LIMIT
     end
 
 end
